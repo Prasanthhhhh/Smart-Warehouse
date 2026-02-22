@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — Warehouse Monitoring System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #060d1b;
+            --surface: #0a1628;
+            --card: #0f1e35;
+            --card2: #132340;
+            --border: #1a3050;
+            --border2: #1e3d66;
+            --accent: #0ea5e9;
+            --accent-g: rgba(14, 165, 233, 0.12);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --purple: #8b5cf6;
+            --text: #ddeeff;
+            --muted: #4d7a9e;
+            --mono: 'JetBrains Mono', monospace;
+            --ui: 'Inter', sans-serif;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--ui);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ─── TOPBAR ─── */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            background: rgba(6, 13, 27, .92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-text {
+            font-size: .95rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+            color: var(--text);
+        }
+
+        .logo-sub {
+            font-size: .7rem;
+            color: var(--muted);
+            font-family: var(--mono);
+            letter-spacing: .1em;
+        }
+
+        .facility-badge {
+            font-family: var(--mono);
+            font-size: .72rem;
+            color: var(--accent);
+            background: var(--accent-g);
+            border: 1px solid rgba(14, 165, 233, .25);
+            padding: 3px 10px;
+            border-radius: 4px;
+            letter-spacing: .08em;
+        }
+
+        .topbar-nav {
+            display: flex;
+            gap: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-weight: 500;
+            color: var(--muted);
+            transition: all .2s;
+            letter-spacing: .02em;
+        }
+
+        .nav-item:hover {
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: var(--accent-g);
+            color: var(--accent);
+            border: 1px solid rgba(14, 165, 233, .2);
+        }
+
+        .nav-item svg {
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .live-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--mono);
+            font-size: .7rem;
+            letter-spacing: .1em;
+            color: var(--success);
+        }
+
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, .4);
+            }
+
+            50% {
+                opacity: .7;
+                box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+            }
+        }
+
+        .alert-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+
+            background: {
+                % if unacked_alerts>0 %
+            }
+
+            rgba(239, 68, 68, .12) {
+                % else %
+            }
+
+            var(--card) {
+                % endif %
+            }
+
+            ;
+
+            border: 1px solid {
+                % if unacked_alerts>0 %
+            }
+
+            rgba(239, 68, 68, .3) {
+                % else %
+            }
+
+            var(--border) {
+                % endif %
+            }
+
+            ;
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: .78rem;
+            font-weight: 600;
+            font-family: var(--mono);
+
+            color: {
+                % if unacked_alerts>0 %
+            }
+
+            var(--danger) {
+                % else %
+            }
+
+            var(--muted) {
+                % endif %
+            }
+
+            ;
+        }
+
+        .sys-time {
+            font-family: var(--mono);
+            font-size: .78rem;
+            color: var(--muted);
+            min-width: 72px;
+        }
+
+        /* ─── LAYOUT ─── */
+        .page {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* ─── STATS ROW ─── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.1rem 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: border-color .25s, transform .2s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--border2);
+            transform: translateY(-1px);
+        }
+
+        .stat-icon-wrap {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .stat-icon-wrap svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .ic-blue {
+            background: rgba(14, 165, 233, .12);
+            color: var(--accent);
+        }
+
+        .ic-red {
+            background: rgba(239, 68, 68, .12);
+            color: var(--danger);
+        }
+
+        .ic-green {
+            background: rgba(16, 185, 129, .12);
+            color: var(--success);
+        }
+
+        .ic-purple {
+            background: rgba(139, 92, 246, .12);
+            color: var(--purple);
+        }
+
+        .ic-amber {
+            background: rgba(245, 158, 11, .12);
+            color: var(--warning);
+        }
+
+        .stat-label {
+            font-size: .72rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: 2px;
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            font-family: var(--mono);
+            line-height: 1;
+        }
+
+        .stat-meta {
+            font-size: .7rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* ─── SENSOR GRID ─── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: .85rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .1em;
+        }
+
+        .section-action {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: .75rem;
+            color: var(--accent);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: var(--ui);
+        }
+
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media(max-width:1200px) {
+            .sensor-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media(max-width:720px) {
+            .sensor-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .sensor-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.2rem;
+            cursor: pointer;
+            transition: border-color .25s, transform .2s, box-shadow .25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sensor-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent-g), transparent);
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .sensor-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(14, 165, 233, .1);
+        }
+
+        .sensor-card:hover::after {
+            opacity: 1;
+        }
+
+        .sensor-card.alert-state {
+            border-color: rgba(239, 68, 68, .5);
+        }
+
+        .sensor-card.alert-state::after {
+            background: linear-gradient(135deg, rgba(239, 68, 68, .08), transparent);
+            opacity: 1;
+        }
+
+        .sensor-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: .75rem;
+        }
+
+        .sensor-icon-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sensor-icon-box svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .sensor-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .dot-ok {
+            background: var(--success);
+            box-shadow: 0 0 6px var(--success);
+        }
+
+        .dot-warn {
+            background: var(--warning);
+            box-shadow: 0 0 6px var(--warning);
+            animation: pulse 1.5s infinite;
+        }
+
+        .dot-bad {
+            background: var(--danger);
+            box-shadow: 0 0 6px var(--danger);
+            animation: pulse 1s infinite;
+        }
+
+        .dot-off {
+            background: var(--muted);
+        }
+
+        .sensor-model {
+            font-family: var(--mono);
+            font-size: .65rem;
+            color: var(--accent);
+            letter-spacing: .08em;
+            margin-bottom: 1px;
+        }
+
+        .sensor-name {
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .sensor-cat {
+            font-size: .65rem;
+            color: var(--muted);
+        }
+
+        .sensor-value-row {
+            margin: .6rem 0 .5rem;
+        }
+
+        .sensor-value {
+            font-family: var(--mono);
+            font-size: 1.9rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .sensor-unit {
+            font-family: var(--mono);
+            font-size: .75rem;
+            color: var(--muted);
+            margin-left: 3px;
+        }
+
+        .sensor-bar-wrap {
+            height: 4px;
+            background: var(--border);
+            border-radius: 99px;
+            overflow: hidden;
+            margin-bottom: .5rem;
+        }
+
+        .sensor-bar {
+            height: 100%;
+            border-radius: 99px;
+            transition: width .8s ease;
+        }
+
+        .sensor-threshold {
+            font-size: .65rem;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ─── BOTTOM PANELS ─── */
+        .bottom-row {
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 1rem;
+        }
+
+        @media(max-width:1000px) {
+            .bottom-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .9rem 1.2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-title {
+            font-size: .78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--muted);
+        }
+
+        .panel-body {
+            padding: 1rem 1.2rem;
+        }
+
+        /* Alert list */
+        .alert-list {
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+        }
+
+        .alert-row {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .6rem .8rem;
+            border-radius: 7px;
+            background: var(--surface);
+            border-left: 3px solid transparent;
+            font-size: .8rem;
+        }
+
+        .alert-row.HIGH {
+            border-color: var(--danger);
+        }
+
+        .alert-row.LOW {
+            border-color: var(--warning);
+        }
+
+        .alert-icon {
+            flex-shrink: 0;
+        }
+
+        .alert-msg {
+            flex: 1;
+            color: var(--text);
+            font-size: .78rem;
+        }
+
+        .alert-time {
+            font-family: var(--mono);
+            font-size: .65rem;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .alert-type-tag {
+            font-family: var(--mono);
+            font-size: .6rem;
+            font-weight: 600;
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+
+        .tag-high {
+            background: rgba(239, 68, 68, .15);
+            color: var(--danger);
+        }
+
+        .tag-low {
+            background: rgba(245, 158, 11, .15);
+            color: var(--warning);
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: var(--muted);
+            font-size: .82rem;
+            padding: 2rem 0;
+        }
+
+        .empty-msg svg {
+            width: 28px;
+            height: 28px;
+            opacity: .4;
+            margin-bottom: .5rem;
+            display: block;
+            margin: 0 auto .5rem;
+        }
+
+        /* Chart canvas */
+        .chart-wrap {
+            position: relative;
+            height: 200px;
+        }
+
+        /* Utility */
+        .btn-sm {
+            font-size: .73rem;
+            padding: 4px 12px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            font-family: var(--ui);
+            transition: all .2s;
+        }
+
+        .btn-sm:hover {
+            background: var(--card2);
+            color: var(--text);
+            border-color: var(--border2);
+        }
+
+        .btn-accent {
+            font-size: .73rem;
+            padding: 4px 12px;
+            border-radius: 5px;
+            border: 1px solid rgba(14, 165, 233, .3);
+            background: var(--accent-g);
+            color: var(--accent);
+            cursor: pointer;
+            font-family: var(--ui);
+            transition: all .2s;
+        }
+
+        .btn-accent:hover {
+            background: rgba(14, 165, 233, .2);
+        }
+
+        /* Grid line decoration */
+        .grid-decoration {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: .025;
+            background-image: linear-gradient(var(--accent) 1px, transparent 1px), linear-gradient(90deg, var(--accent) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid-decoration"></div>
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18">
+                        <rect x="1" y="3" width="15" height="13" rx="1" />
+                        <path d="m16 8 2 2 4-4" />
+                        <path d="M1 6h4" />
+                        <path d="m7 3-3 7" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="logo-text">WAREHOUSE MONITORING</div>
+                    <div class="logo-sub">INDUSTRIAL IOT PLATFORM</div>
+                </div>
+            </div>
+
+        </div>
+
+        <nav class="topbar-nav">
+            <a href="/" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect width="7" height="9" x="3" y="3" rx="1" />
+                    <rect width="7" height="5" x="14" y="3" rx="1" />
+                    <rect width="7" height="9" x="14" y="12" rx="1" />
+                    <rect width="7" height="5" x="3" y="16" rx="1" />
+                </svg>
+                Dashboard
+            </a>
+            <a href="/sensors" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+                Sensors
+            </a>
+            <a href="/cctv" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m15 10 4.553-2.07A1 1 0 0 1 21 8.87v6.26a1 1 0 0 1-1.447.93L15 14" />
+                    <rect x="1" y="6" width="15" height="12" rx="2" />
+                    <circle cx="5.5" cy="12" r="1.5" />
+                </svg>
+                CCTV
+            </a>
+            <a href="/alerts" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                Alerts
+                {% if unacked_alerts > 0 %}<span
+                    style="background:var(--danger);color:#fff;border-radius:99px;font-size:.6rem;padding:1px 5px;font-family:var(--mono);">{{
+                    unacked_alerts }}</span>{% endif %}
+            </a>
+        </nav>
+
+        <div class="topbar-right">
+            <div class="live-tag">
+                <div class="live-dot"></div>LIVE
+            </div>
+            <a href="/alerts" class="alert-badge" style="text-decoration:none;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path
+                        d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                </svg>
+                {{ unacked_alerts }} ALERTS
+            </a>
+            <div class="sys-time" id="clock">--:--:--</div>
+        </div>
+    </header>
+
+    <main class="page">
+
+        <!-- STATS ROW -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon-wrap ic-blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="stat-label">Total Readings</div>
+                    <div class="stat-value" style="color:var(--accent)">{{ total_readings }}</div>
+                    <div class="stat-meta">Stored in SQLite DB</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap {% if unacked_alerts > 0 %}ic-red{% else %}ic-green{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                        <line x1="12" y1="9" x2="12" y2="13" />
+                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="stat-label">Active Alerts</div>
+                    <div class="stat-value"
+                        style="color:{% if unacked_alerts > 0 %}var(--danger){% else %}var(--success){% endif %}">{{
+                        unacked_alerts }}</div>
+                    <div class="stat-meta">{% if unacked_alerts == 0 %}All clear{% else %}Needs attention{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap ic-green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M2 12h20" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="stat-label">Sensors Online</div>
+                    <div class="stat-value" style="color:var(--success)">
+                        {{ live_sensors | length if live_sensors else 0 }}/{{ sensor_config | length }}
+                    </div>
+                    <div class="stat-meta">Monitored nodes</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap ic-purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m15 10 4.553-2.07A1 1 0 0 1 21 8.87v6.26a1 1 0 0 1-1.447.93L15 14" />
+                        <rect x="1" y="6" width="15" height="12" rx="2" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="stat-label">CCTV Last Event</div>
+                    <div class="stat-value" style="color:var(--purple);font-size:1rem;padding-top:4px;">
+                        {% if last_detection %}{{ last_detection['person_count'] }} person(s){% else %}No events{% endif
+                        %}
+                    </div>
+                    <div class="stat-meta">{% if last_detection %}{{ last_detection['timestamp'][:16] }}{% else %}Camera
+                        standby{% endif %}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SENSOR GRID -->
+        <div class="section-header">
+            <span class="section-title">Live Sensor Readings</span>
+            <button class="btn-accent" onclick="refreshSensors()">Sync Now</button>
+        </div>
+
+        <div class="sensor-grid" id="sensorGrid">
+            {% set sensor_icons = {
+            'temp': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+            </svg>',
+            'hum': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                    d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
+            </svg>',
+            'motion': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M1.05 12H7" />
+                <path d="M17.01 12h5.95" />
+                <path d="M12 6.06V1.1" />
+                <path d="M12 22.96V18" />
+            </svg>',
+            'air_real': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2" />
+                <path d="M9.6 4.6A2 2 0 1 1 11 8H2" />
+                <path d="M12.6 19.4A2 2 0 1 0 14 16H2" />
+            </svg>',
+            'gas_fake': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                    d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+            </svg>'
+            } %}
+            {% set icon_colors =
+            {'temp':'ic-amber','hum':'ic-blue','motion':'ic-purple','air_real':'ic-blue','gas_fake':'ic-red'} %}
+            {% set value_colors =
+            {'temp':'var(--warning)','hum':'var(--accent)','motion':'var(--purple)','air_real':'var(--accent)','gas_fake':'var(--danger)'}
+            %}
+
+            {% for key, cfg in sensor_config.items() %}
+            {% set live_val = live_sensors.get(key) if live_sensors else none %}
+            {% set max_t = cfg.max_threshold %}
+            {% set min_t = cfg.min_threshold %}
+            {% set is_alert = (live_val is not none) and ((max_t is not none and live_val|float > max_t) or (min_t is
+            not none and live_val|float < min_t)) %} {% set pct=0 %} {% if live_val is not none and max_t is not none %}
+                {% set pct=[(live_val|float / max_t * 100), 100]|min|int %} {% endif %} <div
+                class="sensor-card {% if is_alert %}alert-state{% endif %}">
+                <div class="sensor-header">
+                    <div class="sensor-icon-box {{ icon_colors.get(key,'ic-blue') }}">
+                        {{ sensor_icons.get(key, '') | safe }}
+                    </div>
+                    <div
+                        class="sensor-status-dot {% if live_val is none %}dot-off{% elif is_alert %}dot-bad{% else %}dot-ok{% endif %}">
+                    </div>
+                </div>
+                <div class="sensor-model">{{ cfg.model }}</div>
+                <div class="sensor-name">{{ cfg.display_name }}</div>
+                <div class="sensor-cat">{{ cfg.category }}</div>
+                <div class="sensor-value-row">
+                    <span class="sensor-value" style="color:{{ value_colors.get(key,'var(--accent)') }}">
+                        {% if live_val is not none %}
+                        {% if cfg.unit == '' %}
+                        {% if live_val == 1 %}DETECTED{% else %}CLEAR{% endif %}
+                        {% else %}
+                        {{ live_val }}
+                        {% endif %}
+                        {% else %}N/A{% endif %}
+                    </span>
+                    {% if cfg.unit and cfg.unit != '' %}<span class="sensor-unit">{{ cfg.unit }}</span>{% endif %}
+                </div>
+                {% if max_t is not none and live_val is not none %}
+                <div class="sensor-bar-wrap">
+                    <div class="sensor-bar"
+                        style="width:{{ pct }}%;background:{% if pct > 85 %}var(--danger){% elif pct > 60 %}var(--warning){% else %}var(--success){% endif %}">
+                    </div>
+                </div>
+                <div class="sensor-threshold">
+                    <span>0{{ cfg.unit }}</span>
+                    <span>Limit: {{ max_t }}{{ cfg.unit }}</span>
+                </div>
+                {% endif %}
+        </div>
+        {% endfor %}
+        </div>
+
+        <!-- BOTTOM PANELS -->
+        <div class="bottom-row">
+            <!-- Recent Alerts -->
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-title">Recent Alerts</span>
+                    <a href="/alerts" class="btn-sm" style="text-decoration:none">View All</a>
+                </div>
+                <div class="panel-body">
+                    {% if recent_alerts %}
+                    <div class="alert-list">
+                        {% for a in recent_alerts %}
+                        <div class="alert-row {{ a['alert_type'] }}">
+                            {% if a['alert_type'] == 'HIGH' %}
+                            <svg class="alert-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="#ef4444" stroke-width="2.5">
+                                <path
+                                    d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            </svg>
+                            {% else %}
+                            <svg class="alert-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="#f59e0b" stroke-width="2.5">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                            {% endif %}
+                            <span
+                                class="alert-type-tag {% if a['alert_type']=='HIGH' %}tag-high{% else %}tag-low{% endif %}">{{
+                                a['alert_type'] }}</span>
+                            <span class="alert-msg">{{ a['message'] }}</span>
+                            <span class="alert-time">{{ a['timestamp'][11:16] }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-msg">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        All systems nominal — no alerts
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Temperature History Chart -->
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-title">Temperature History (DHT22)</span>
+                    <span style="font-family:var(--mono);font-size:.65rem;color:var(--muted);">Last 50 readings</span>
+                </div>
+                <div class="panel-body">
+                    <div class="chart-wrap">
+                        <canvas id="tempChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // ── Clock ──
+        function tick() {
+            const now = new Date();
+            document.getElementById('clock').textContent =
+                now.toTimeString().slice(0, 8);
+        }
+        tick(); setInterval(tick, 1000);
+
+        // ── Refresh sensor cards via API ──
+        async function refreshSensors() {
+            try {
+                await fetch('/api/sync', { method: 'POST' });
+                location.reload();
+            } catch (e) { console.error(e); }
+        }
+
+        // ── Temperature Chart ──
+        async function loadTempChart() {
+            try {
+                const res = await fetch('/api/history/temp?limit=50');
+                const data = await res.json();
+                if (!data.length) return;
+                const labels = data.map(d => d.timestamp.slice(11, 16));
+                const values = data.map(d => d.value);
+                const ctx = document.getElementById('tempChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Temperature °C',
+                            data: values,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245,158,11,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 5,
+                            tension: 0.4,
+                            fill: true,
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#0f1e35',
+                                borderColor: '#1a3050',
+                                borderWidth: 1,
+                                titleColor: '#ddeeff',
+                                bodyColor: '#f59e0b',
+                                titleFont: { family: 'JetBrains Mono', size: 11 },
+                                bodyFont: { family: 'JetBrains Mono', size: 13 },
+                            }
+                        },
+                        scales: {
+                            x: { grid: { color: '#1a3050' }, ticks: { color: '#4d7a9e', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 8 } },
+                            y: {
+                                grid: { color: '#1a3050' }, ticks: { color: '#4d7a9e', font: { family: 'JetBrains Mono', size: 10 } },
+                                suggestedMin: 15, suggestedMax: 45,
+                                afterDataLimits(scale) { scale.max += 2; scale.min -= 2; }
+                            }
+                        }
+                    }
+                });
+            } catch (e) { console.error('[Chart]', e); }
+        }
+        loadTempChart();
+
+        // ── Auto-refresh every 30s ──
+        setTimeout(() => location.reload(), 30000);
+    </script>
+</body>
+
+</html>

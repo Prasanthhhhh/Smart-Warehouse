@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CCTV — Warehouse Monitoring System</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+    <style>
+        :root {
+            --bg: #060d1b;
+            --surface: #0a1628;
+            --card: #0f1e35;
+            --border: #1a3050;
+            --accent: #0ea5e9;
+            --accent-g: rgba(14, 165, 233, .12);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --purple: #8b5cf6;
+            --text: #ddeeff;
+            --muted: #4d7a9e;
+            --mono: 'JetBrains Mono', monospace;
+            --ui: 'Inter', sans-serif;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--ui);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            background: rgba(6, 13, 27, .92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-text {
+            font-size: .95rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+        }
+
+        .logo-sub {
+            font-size: .7rem;
+            color: var(--muted);
+            font-family: var(--mono);
+            letter-spacing: .1em;
+        }
+
+        .facility-badge {
+            font-family: var(--mono);
+            font-size: .72rem;
+            color: var(--accent);
+            background: var(--accent-g);
+            border: 1px solid rgba(14, 165, 233, .25);
+            padding: 3px 10px;
+            border-radius: 4px;
+            letter-spacing: .08em;
+        }
+
+        .topbar-nav {
+            display: flex;
+            gap: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-weight: 500;
+            color: var(--muted);
+            transition: all .2s;
+        }
+
+        .nav-item:hover {
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: var(--accent-g);
+            color: var(--accent);
+            border: 1px solid rgba(14, 165, 233, .2);
+        }
+
+        .nav-item svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .rec-live {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--mono);
+            font-size: .7rem;
+            letter-spacing: .1em;
+            color: var(--danger);
+        }
+
+        .rec-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--danger);
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, .5);
+            }
+
+            50% {
+                opacity: .7;
+                box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+            }
+        }
+
+        .sys-time {
+            font-family: var(--mono);
+            font-size: .78rem;
+            color: var(--muted);
+        }
+
+        .page {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 1.25rem;
+        }
+
+        @media(max-width:1100px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Camera panel */
+        .cam-panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .cam-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .9rem 1.2rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(10, 22, 40, .6);
+        }
+
+        .cam-title {
+            font-family: var(--mono);
+            font-size: .8rem;
+            font-weight: 600;
+            letter-spacing: .06em;
+        }
+
+        .cam-sub {
+            font-size: .65rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .chip {
+            font-family: var(--mono);
+            font-size: .6rem;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 4px;
+            letter-spacing: .06em;
+        }
+
+        .chip-red {
+            background: rgba(239, 68, 68, .12);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, .25);
+        }
+
+        .chip-blue {
+            background: rgba(14, 165, 233, .12);
+            color: var(--accent);
+            border: 1px solid rgba(14, 165, 233, .25);
+        }
+
+        .chip-green {
+            background: rgba(16, 185, 129, .12);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, .25);
+        }
+
+        /* Video view */
+        .cam-view {
+            position: relative;
+            background: #000;
+            aspect-ratio: 16/9;
+            overflow: hidden;
+        }
+
+        #video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hud {
+            position: absolute;
+            font-family: var(--mono);
+            font-size: .68rem;
+            color: rgba(14, 165, 233, .9);
+            pointer-events: none;
+            line-height: 1.6;
+            text-shadow: 0 0 8px rgba(14, 165, 233, .4);
+            z-index: 10;
+        }
+
+        .hud-tl {
+            top: 10px;
+            left: 10px;
+        }
+
+        .hud-tr {
+            top: 10px;
+            right: 10px;
+            text-align: right;
+        }
+
+        .hud-br {
+            bottom: 36px;
+            right: 10px;
+            text-align: right;
+        }
+
+        .fc {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            z-index: 11;
+            pointer-events: none;
+        }
+
+        .fc-tl {
+            top: 6px;
+            left: 6px;
+            border-top: 2px solid var(--accent);
+            border-left: 2px solid var(--accent);
+        }
+
+        .fc-tr {
+            top: 6px;
+            right: 6px;
+            border-top: 2px solid var(--accent);
+            border-right: 2px solid var(--accent);
+        }
+
+        .fc-bl {
+            bottom: 6px;
+            left: 6px;
+            border-bottom: 2px solid var(--accent);
+            border-left: 2px solid var(--accent);
+        }
+
+        .fc-br {
+            bottom: 6px;
+            right: 6px;
+            border-bottom: 2px solid var(--accent);
+            border-right: 2px solid var(--accent);
+        }
+
+        #alertBanner {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            background: rgba(239, 68, 68, .88);
+            padding: 7px;
+            font-family: var(--mono);
+            font-size: .76rem;
+            font-weight: 600;
+            letter-spacing: .1em;
+            color: #fff;
+            text-align: center;
+        }
+
+        .no-cam {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            color: var(--muted);
+            gap: .75rem;
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 22, 40, .95);
+        }
+
+        .no-cam svg {
+            width: 44px;
+            height: 44px;
+            opacity: .35;
+        }
+
+        .no-cam p {
+            font-size: .78rem;
+            text-align: center;
+            max-width: 260px;
+            line-height: 1.5;
+        }
+
+        #personCounter {
+            position: absolute;
+            bottom: 8px;
+            left: 12px;
+            z-index: 10;
+            font-family: var(--mono);
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, .8);
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        #personLabel {
+            font-size: .58rem;
+            color: rgba(255, 255, 255, .55);
+            display: block;
+            letter-spacing: .1em;
+        }
+
+        /* Controls */
+        .cam-controls {
+            display: flex;
+            gap: .6rem;
+            align-items: center;
+            padding: .9rem 1.2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: .76rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-family: var(--ui);
+            transition: all .2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #38bdf8;
+        }
+
+        .btn-stop {
+            background: rgba(239, 68, 68, .12);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, .3);
+        }
+
+        .btn-stop:hover {
+            background: rgba(239, 68, 68, .22);
+        }
+
+        #modelStatus {
+            font-family: var(--mono);
+            font-size: .68rem;
+            color: var(--muted);
+            margin-left: auto;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .ph {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .8rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pt {
+            font-size: .7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: var(--muted);
+        }
+
+        .pb {
+            padding: .8rem 1rem;
+        }
+
+        .stat-r {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: .4rem 0;
+            border-bottom: 1px solid rgba(26, 48, 80, .5);
+        }
+
+        .stat-r:last-child {
+            border: none;
+        }
+
+        .sl {
+            font-size: .7rem;
+            color: var(--muted);
+        }
+
+        .sv {
+            font-family: var(--mono);
+            font-size: .88rem;
+            font-weight: 600;
+        }
+
+        .event-log {
+            max-height: 250px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .ev {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .45rem .6rem;
+            border-radius: 5px;
+            background: var(--surface);
+            font-size: .7rem;
+            border-left: 3px solid transparent;
+        }
+
+        .ev.person {
+            border-color: var(--danger);
+        }
+
+        .ev.clear {
+            border-color: var(--muted);
+        }
+
+        .ev-count {
+            font-family: var(--mono);
+            font-weight: 600;
+            min-width: 16px;
+        }
+
+        .ev-time {
+            font-family: var(--mono);
+            font-size: .6rem;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .event-log::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .event-log::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 99px;
+        }
+
+        .gd {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: .02;
+            background-image: linear-gradient(var(--accent) 1px, transparent 1px), linear-gradient(90deg, var(--accent) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="gd"></div>
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="logo">
+                <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18"
+                        height="18">
+                        <rect x="1" y="3" width="15" height="13" rx="1" />
+                        <path d="m16 8 2 2 4-4" />
+                    </svg></div>
+                <div>
+                    <div class="logo-text">WAREHOUSE MONITORING</div>
+                    <div class="logo-sub">INDUSTRIAL IOT PLATFORM</div>
+                </div>
+            </div>
+
+        </div>
+        <nav class="topbar-nav">
+            <a href="/" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect width="7" height="9" x="3" y="3" rx="1" />
+                    <rect width="7" height="5" x="14" y="3" rx="1" />
+                    <rect width="7" height="9" x="14" y="12" rx="1" />
+                    <rect width="7" height="5" x="3" y="16" rx="1" />
+                </svg>Dashboard</a>
+            <a href="/sensors" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>Sensors</a>
+            <a href="/cctv" class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <path d="m15 10 4.553-2.07A1 1 0 0 1 21 8.87v6.26a1 1 0 0 1-1.447.93L15 14" />
+                    <rect x="1" y="6" width="15" height="12" rx="2" />
+                    <circle cx="5.5" cy="12" r="1.5" />
+                </svg>CCTV</a>
+            <a href="/alerts" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <path
+                        d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>Alerts</a>
+        </nav>
+        <div class="topbar-right">
+            <div class="rec-live">
+                <div class="rec-dot"></div>REC
+            </div>
+            <div class="sys-time" id="clock">--:--:--</div>
+        </div>
+    </header>
+
+    <main class="page">
+        <div class="layout">
+            <div class="cam-panel">
+                <div class="cam-head">
+                    <div>
+                        <div class="cam-title">CAM-01 / ZONE-A · MAIN FLOOR</div>
+                        <div class="cam-sub">Laptop Webcam · COCO-SSD Human Detection · TensorFlow.js</div>
+                    </div>
+                    <div style="display:flex;gap:.5rem;">
+                        <span class="chip chip-red" id="recChip">OFFLINE</span>
+                        <span class="chip chip-blue" id="aiChip">MODEL LOADING</span>
+                    </div>
+                </div>
+
+                <div class="cam-view">
+                    <div class="fc fc-tl"></div>
+                    <div class="fc fc-tr"></div>
+                    <div class="fc fc-bl"></div>
+                    <div class="fc fc-br"></div>
+                    <div id="alertBanner">PERSON DETECTED — ZONE-A</div>
+                    <video id="video" autoplay muted playsinline></video>
+                    <canvas id="canvas"></canvas>
+                    <div class="hud hud-tl">
+                        <div>WH-001 / CAM-01</div>
+                        <div>ZONE-A · MAIN FLOOR</div>
+                    </div>
+                    <div class="hud hud-tr">
+                        <div id="hudTime">--:--:--</div>
+                        <div id="hudDate">--/--/----</div>
+                    </div>
+                    <div class="hud hud-br">
+                        <div>COCO-SSD v2 · TF.js</div>
+                        <div id="hudFps">FPS: --</div>
+                    </div>
+                    <div id="personCounter"><span id="personCount">0</span><span id="personLabel">PERSONS</span></div>
+                    <div class="no-cam" id="noCam">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="m15 10 4.553-2.07A1 1 0 0 1 21 8.87v6.26a1 1 0 0 1-1.447.93L15 14" />
+                            <rect x="1" y="6" width="15" height="12" rx="2" />
+                            <line x1="2" y1="2" x2="22" y2="22" />
+                        </svg>
+                        <p>Click <strong>Start Camera</strong> to activate live surveillance and AI person detection.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="cam-controls">
+                    <button class="btn btn-primary" id="startBtn" onclick="startCamera()">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3" />
+                        </svg>
+                        Start Camera
+                    </button>
+                    <button class="btn btn-stop" id="stopBtn" onclick="stopCamera()" disabled>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                        </svg>
+                        Stop
+                    </button>
+                    <div style="display:flex;align-items:center;gap:.5rem;margin-left:1rem;">
+                        <label style="font-size:.7rem;color:var(--muted);font-family:var(--mono);">CONF</label>
+                        <input type="range" id="confSlider" min="20" max="95" value="60"
+                            style="width:80px;accent-color:var(--accent);"
+                            oninput="document.getElementById('confVal').textContent=this.value+'%'">
+                        <span id="confVal"
+                            style="font-family:var(--mono);font-size:.7rem;color:var(--accent);">60%</span>
+                    </div>
+                    <span id="modelStatus">Loading AI model...</span>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="ph"><span class="pt">Detection Stats</span></div>
+                    <div class="pb">
+                        <div class="stat-r"><span class="sl">All-Time Events</span><span class="sv"
+                                style="color:var(--accent)">{{ total_detections }}</span></div>
+                        <div class="stat-r"><span class="sl">Today's Events</span><span class="sv"
+                                style="color:var(--warning)">{{ today_detections }}</span></div>
+                        <div class="stat-r"><span class="sl">Session Events</span><span class="sv" id="sessCount"
+                                style="color:var(--success)">0</span></div>
+                        <div class="stat-r"><span class="sl">Live Persons</span><span class="sv" id="livePerson"
+                                style="color:var(--danger)">—</span></div>
+                    </div>
+                </div>
+
+                <div class="panel" style="flex:1;">
+                    <div class="ph">
+                        <span class="pt">Detection Log</span>
+                        <span id="logCount" style="font-family:var(--mono);font-size:.62rem;color:var(--muted);">0
+                            events</span>
+                    </div>
+                    <div class="pb" style="padding:.6rem .8rem;">
+                        <div class="event-log" id="eventLog">
+                            {% for evt in recent_events %}
+                            <div class="ev {% if evt['person_count'] > 0 %}person{% else %}clear{% endif %}">
+                                <span class="ev-count"
+                                    style="color:{% if evt['person_count'] > 0 %}var(--danger){% else %}var(--muted){% endif %}">{{
+                                    evt['person_count'] }}</span>
+                                <div style="flex:1;font-size:.7rem;">ZONE-A · {{ evt['person_count'] }} person(s)</div>
+                                <span class="ev-time">{{ evt['timestamp'][11:16] }}</span>
+                            </div>
+                            {% else %}
+                            <div style="text-align:center;color:var(--muted);font-size:.72rem;padding:1.5rem 0;">No
+                                events recorded</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let model = null, stream = null, running = false;
+        let lastCount = -1, sessEvents = 0, lastLogTime = 0, frames = 0, lastFpsT = Date.now();
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function tick() {
+            const t = new Date();
+            const ts = t.toTimeString().slice(0, 8);
+            document.getElementById('clock').textContent = ts;
+            document.getElementById('hudTime').textContent = ts;
+            document.getElementById('hudDate').textContent = t.toISOString().slice(0, 10);
+        }
+        tick(); setInterval(tick, 1000);
+
+        cocoSsd.load().then(m => {
+            model = m;
+            document.getElementById('modelStatus').innerHTML = 'Model ready';
+            document.getElementById('modelStatus').style.color = 'var(--success)';
+            document.getElementById('aiChip').textContent = 'AI READY';
+            document.getElementById('aiChip').className = 'chip chip-green';
+        }).catch(e => {
+            document.getElementById('modelStatus').textContent = 'Model failed';
+            console.error(e);
+        });
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false });
+                video.srcObject = stream;
+                await video.play();
+                document.getElementById('noCam').style.display = 'none';
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                document.getElementById('recChip').textContent = 'LIVE';
+                document.getElementById('recChip').className = 'chip chip-green';
+                running = true;
+                loop();
+            } catch (e) { alert('Camera error:\n' + e.message); }
+        }
+
+        function stopCamera() {
+            running = false;
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            video.srcObject = null;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('noCam').style.display = 'flex';
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('alertBanner').style.display = 'none';
+            document.getElementById('recChip').textContent = 'OFFLINE';
+            document.getElementById('recChip').className = 'chip chip-red';
+            document.getElementById('personCount').textContent = '0';
+            document.getElementById('livePerson').textContent = '—';
+        }
+
+        let lastDetect = 0;
+        async function loop() {
+            if (!running) return;
+            const now = Date.now();
+            frames++;
+            if (now - lastFpsT > 1000) { document.getElementById('hudFps').textContent = 'FPS: ' + frames; frames = 0; lastFpsT = now; }
+            if (model && video.readyState === 4 && now - lastDetect > 500) {
+                lastDetect = now;
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const conf = parseInt(document.getElementById('confSlider').value) / 100;
+                try {
+                    const preds = await model.detect(video);
+                    const persons = preds.filter(p => p.class === 'person' && p.score >= conf);
+                    const count = persons.length;
+                    persons.forEach(p => {
+                        const [x, y, w, h] = p.bbox;
+                        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
+                        ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 10;
+                        ctx.strokeRect(x, y, w, h); ctx.shadowBlur = 0;
+                        const lbl = `PERSON ${Math.round(p.score * 100)}%`;
+                        ctx.font = 'bold 12px JetBrains Mono,monospace';
+                        const tw = ctx.measureText(lbl).width;
+                        ctx.fillStyle = 'rgba(239,68,68,.85)';
+                        ctx.fillRect(x, y - 22, tw + 10, 22);
+                        ctx.fillStyle = '#fff'; ctx.fillText(lbl, x + 5, y - 7);
+                    });
+                    document.getElementById('personCount').textContent = count;
+                    document.getElementById('livePerson').textContent = count;
+                    document.getElementById('personCount').style.color = count > 0 ? '#ef4444' : '#fff';
+                    document.getElementById('alertBanner').style.display = count > 0 ? 'block' : 'none';
+                    const maxC = persons.length ? Math.max(...persons.map(p => p.score)) : 0;
+                    if (count !== lastCount || (count > 0 && now - lastLogTime > 120000)) {
+                        lastCount = count; lastLogTime = now;
+                        if (count > 0) { sessEvents++; document.getElementById('sessCount').textContent = sessEvents; }
+                        addEntry(count, maxC);
+                        fetch('/api/detection', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ person_count: count, max_confidence: maxC, zone: 'ZONE-A' }) }).catch(() => { });
+                    }
+                } catch (e) { console.error(e); }
+            }
+            requestAnimationFrame(loop);
+        }
+
+        function addEntry(count, conf) {
+            const log = document.getElementById('eventLog');
+            const t = new Date().toTimeString().slice(0, 8);
+            const r = document.createElement('div');
+            r.className = `ev ${count > 0 ? 'person' : 'clear'}`;
+            r.innerHTML = `<span class="ev-count" style="color:${count > 0 ? 'var(--danger)' : 'var(--muted)'}">${count}</span><div style="flex:1;font-size:.7rem;">ZONE-A · ${count} person(s)</div><span class="ev-time">${t}</span>`;
+            log.prepend(r);
+            document.getElementById('logCount').textContent = log.children.length + ' events';
+            while (log.children.length > 50) log.removeChild(log.lastChild);
+        }
+    </script>
+</body>
+
+</html>
