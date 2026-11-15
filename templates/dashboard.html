@@ -1,15 +1,17 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard — Warehouse Monitoring System</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-        rel="stylesheet" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
     <style>
         :root {
             --bg: #060d1b;
@@ -51,7 +53,6 @@
             color: inherit;
         }
 
-        /* ─── TOPBAR ─── */
         .topbar {
             position: sticky;
             top: 0;
@@ -59,22 +60,26 @@
             background: rgba(6, 13, 27, .92);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border);
-            height: 58px;
+            min-height: 58px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 1.5rem;
+            gap: 1rem;
+        }
+
+        .topbar-left,
+        .logo,
+        .topbar-right {
+            display: flex;
+            align-items: center;
         }
 
         .topbar-left {
-            display: flex;
-            align-items: center;
             gap: 1.25rem;
         }
 
         .logo {
-            display: flex;
-            align-items: center;
             gap: 10px;
         }
 
@@ -86,6 +91,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .logo-text {
@@ -100,17 +106,6 @@
             color: var(--muted);
             font-family: var(--mono);
             letter-spacing: .1em;
-        }
-
-        .facility-badge {
-            font-family: var(--mono);
-            font-size: .72rem;
-            color: var(--accent);
-            background: var(--accent-g);
-            border: 1px solid rgba(14, 165, 233, .25);
-            padding: 3px 10px;
-            border-radius: 4px;
-            letter-spacing: .08em;
         }
 
         .topbar-nav {
@@ -129,6 +124,7 @@
             color: var(--muted);
             transition: all .2s;
             letter-spacing: .02em;
+            white-space: nowrap;
         }
 
         .nav-item:hover {
@@ -149,8 +145,6 @@
         }
 
         .topbar-right {
-            display: flex;
-            align-items: center;
             gap: 1rem;
         }
 
@@ -162,6 +156,7 @@
             font-size: .7rem;
             letter-spacing: .1em;
             color: var(--success);
+            white-space: nowrap;
         }
 
         .live-dot {
@@ -173,13 +168,10 @@
         }
 
         @keyframes pulse {
-
-            0%,
-            100% {
+            0%, 100% {
                 opacity: 1;
                 box-shadow: 0 0 0 0 rgba(16, 185, 129, .4);
             }
-
             50% {
                 opacity: .7;
                 box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
@@ -190,53 +182,15 @@
             display: flex;
             align-items: center;
             gap: 6px;
-
-            background: {
-                % if unacked_alerts>0 %
-            }
-
-            rgba(239, 68, 68, .12) {
-                % else %
-            }
-
-            var(--card) {
-                % endif %
-            }
-
-            ;
-
-            border: 1px solid {
-                % if unacked_alerts>0 %
-            }
-
-            rgba(239, 68, 68, .3) {
-                % else %
-            }
-
-            var(--border) {
-                % endif %
-            }
-
-            ;
+            background: {% if unacked_alerts > 0 %}rgba(239, 68, 68, .12){% else %}var(--card){% endif %};
+            border: 1px solid {% if unacked_alerts > 0 %}rgba(239, 68, 68, .3){% else %}var(--border){% endif %};
             border-radius: 6px;
             padding: 4px 12px;
             font-size: .78rem;
             font-weight: 600;
             font-family: var(--mono);
-
-            color: {
-                % if unacked_alerts>0 %
-            }
-
-            var(--danger) {
-                % else %
-            }
-
-            var(--muted) {
-                % endif %
-            }
-
-            ;
+            color: {% if unacked_alerts > 0 %}var(--danger){% else %}var(--muted){% endif %};
+            white-space: nowrap;
         }
 
         .sys-time {
@@ -246,14 +200,12 @@
             min-width: 72px;
         }
 
-        /* ─── LAYOUT ─── */
         .page {
             max-width: 1440px;
             margin: 0 auto;
             padding: 1.5rem;
         }
 
-        /* ─── STATS ROW ─── */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -270,6 +222,7 @@
             align-items: center;
             gap: 1rem;
             transition: border-color .25s, transform .2s;
+            min-width: 0;
         }
 
         .stat-card:hover {
@@ -335,10 +288,9 @@
         .stat-meta {
             font-size: .7rem;
             color: var(--muted);
-            margin-top: 2px;
+            margin-top: 4px;
         }
 
-        /* ─── SENSOR GRID ─── */
         .section-header {
             display: flex;
             align-items: center;
@@ -354,18 +306,6 @@
             letter-spacing: .1em;
         }
 
-        .section-action {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: .75rem;
-            color: var(--accent);
-            cursor: pointer;
-            background: none;
-            border: none;
-            font-family: var(--ui);
-        }
-
         .sensor-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -373,27 +313,15 @@
             margin-bottom: 1.5rem;
         }
 
-        @media(max-width:1200px) {
-            .sensor-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        @media(max-width:720px) {
-            .sensor-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
         .sensor-card {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 10px;
             padding: 1.2rem;
-            cursor: pointer;
             transition: border-color .25s, transform .2s, box-shadow .25s;
             position: relative;
             overflow: hidden;
+            min-width: 0;
         }
 
         .sensor-card::after {
@@ -403,6 +331,7 @@
             background: linear-gradient(135deg, var(--accent-g), transparent);
             opacity: 0;
             transition: opacity .3s;
+            pointer-events: none;
         }
 
         .sensor-card:hover {
@@ -501,6 +430,7 @@
             font-size: 1.9rem;
             font-weight: 600;
             line-height: 1;
+            overflow-wrap: anywhere;
         }
 
         .sensor-unit {
@@ -531,17 +461,10 @@
             justify-content: space-between;
         }
 
-        /* ─── BOTTOM PANELS ─── */
         .bottom-row {
             display: grid;
             grid-template-columns: 1fr 1.4fr;
             gap: 1rem;
-        }
-
-        @media(max-width:1000px) {
-            .bottom-row {
-                grid-template-columns: 1fr;
-            }
         }
 
         .panel {
@@ -549,6 +472,7 @@
             border: 1px solid var(--border);
             border-radius: 10px;
             overflow: hidden;
+            min-width: 0;
         }
 
         .panel-head {
@@ -557,6 +481,7 @@
             justify-content: space-between;
             padding: .9rem 1.2rem;
             border-bottom: 1px solid var(--border);
+            gap: .5rem;
         }
 
         .panel-title {
@@ -571,7 +496,6 @@
             padding: 1rem 1.2rem;
         }
 
-        /* Alert list */
         .alert-list {
             display: flex;
             flex-direction: column;
@@ -587,6 +511,7 @@
             background: var(--surface);
             border-left: 3px solid transparent;
             font-size: .8rem;
+            min-width: 0;
         }
 
         .alert-row.HIGH {
@@ -605,6 +530,7 @@
             flex: 1;
             color: var(--text);
             font-size: .78rem;
+            overflow-wrap: anywhere;
         }
 
         .alert-time {
@@ -643,28 +569,29 @@
             width: 28px;
             height: 28px;
             opacity: .4;
-            margin-bottom: .5rem;
             display: block;
             margin: 0 auto .5rem;
         }
 
-        /* Chart canvas */
         .chart-wrap {
             position: relative;
             height: 200px;
         }
 
-        /* Utility */
-        .btn-sm {
+        .btn-sm,
+        .btn-accent {
             font-size: .73rem;
-            padding: 4px 12px;
+            padding: 5px 12px;
             border-radius: 5px;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--muted);
             cursor: pointer;
             font-family: var(--ui);
             transition: all .2s;
+        }
+
+        .btn-sm {
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
         }
 
         .btn-sm:hover {
@@ -674,107 +601,225 @@
         }
 
         .btn-accent {
-            font-size: .73rem;
-            padding: 4px 12px;
-            border-radius: 5px;
             border: 1px solid rgba(14, 165, 233, .3);
             background: var(--accent-g);
             color: var(--accent);
-            cursor: pointer;
-            font-family: var(--ui);
-            transition: all .2s;
         }
 
         .btn-accent:hover {
             background: rgba(14, 165, 233, .2);
         }
 
-        /* Grid line decoration */
+        .btn-accent:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
         .grid-decoration {
             position: fixed;
             inset: 0;
             pointer-events: none;
             z-index: 0;
             opacity: .025;
-            background-image: linear-gradient(var(--accent) 1px, transparent 1px), linear-gradient(90deg, var(--accent) 1px, transparent 1px);
+            background-image:
+                linear-gradient(var(--accent) 1px, transparent 1px),
+                linear-gradient(90deg, var(--accent) 1px, transparent 1px);
             background-size: 40px 40px;
+        }
+
+        .page,
+        .topbar {
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 1200px) {
+            .sensor-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .bottom-row {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                flex-wrap: wrap;
+                padding: .75rem 1rem;
+            }
+
+            .topbar-nav {
+                order: 3;
+                width: 100%;
+                overflow-x: auto;
+            }
+
+            .topbar-right {
+                margin-left: auto;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .page {
+                padding: 1rem;
+            }
+
+            .sensor-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .logo-text {
+                font-size: .8rem;
+            }
+
+            .logo-sub {
+                font-size: .58rem;
+            }
+
+            .topbar-right {
+                gap: .6rem;
+            }
+
+            .live-tag {
+                display: none;
+            }
+
+            .nav-item {
+                padding: 7px 10px;
+                font-size: .75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-row,
+            .sensor-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .sensor-card {
+                padding: 1rem;
+            }
+
+            .alert-row {
+                flex-wrap: wrap;
+            }
+
+            .alert-msg {
+                min-width: 100%;
+                order: 3;
+            }
+
+            .sys-time {
+                display: none;
+            }
+
+            .alert-badge {
+                padding: 4px 8px;
+                font-size: .68rem;
+            }
         }
     </style>
 </head>
 
 <body>
+
     <div class="grid-decoration"></div>
 
     <!-- TOPBAR -->
     <header class="topbar">
+
         <div class="topbar-left">
             <div class="logo">
                 <div class="logo-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18">
-                        <rect x="1" y="3" width="15" height="13" rx="1" />
-                        <path d="m16 8 2 2 4-4" />
-                        <path d="M1 6h4" />
-                        <path d="m7 3-3 7" />
+                        <rect x="1" y="3" width="15" height="13" rx="1"/>
+                        <path d="m16 8 2 2 4-4"/>
+                        <path d="M1 6h4"/>
+                        <path d="m7 3-3 7"/>
                     </svg>
                 </div>
+
                 <div>
                     <div class="logo-text">WAREHOUSE MONITORING</div>
                     <div class="logo-sub">INDUSTRIAL IOT PLATFORM</div>
                 </div>
             </div>
-
         </div>
 
         <nav class="topbar-nav">
+
             <a href="/" class="nav-item active">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
+                    <rect width="7" height="9" x="3" y="3" rx="1"/>
+                    <rect width="7" height="5" x="14" y="3" rx="1"/>
+                    <rect width="7" height="9" x="14" y="12" rx="1"/>
+                    <rect width="7" height="5" x="3" y="16" rx="1"/>
                 </svg>
                 Dashboard
             </a>
+
             <a href="/sensors" class="nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                 </svg>
                 Sensors
             </a>
+
             <a href="/cctv" class="nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="m15 10 4.553-2.07A1 1 0 0 1 21 8.87v6.26a1 1 0 0 1-1.447.93L15 14" />
-                    <rect x="1" y="6" width="15" height="12" rx="2" />
-                    <circle cx="5.5" cy="12" r="1.5" />
+                    <path d="m15 10 4.553-2.07A1 1 0 0 1 21 8.87v6.26a1 1 0 0 1-1.447.93L15 14"/>
+                    <rect x="1" y="6" width="15" height="12" rx="2"/>
+                    <circle cx="5.5" cy="12" r="1.5"/>
                 </svg>
                 CCTV
             </a>
+
             <a href="/alerts" class="nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path
-                        d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                    <line x1="12" y1="9" x2="12" y2="13" />
-                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
                 Alerts
-                {% if unacked_alerts > 0 %}<span
-                    style="background:var(--danger);color:#fff;border-radius:99px;font-size:.6rem;padding:1px 5px;font-family:var(--mono);">{{
-                    unacked_alerts }}</span>{% endif %}
+
+                {% if unacked_alerts > 0 %}
+                <span style="background:var(--danger);color:#fff;border-radius:99px;font-size:.6rem;padding:1px 5px;font-family:var(--mono);">
+                    {{ unacked_alerts }}
+                </span>
+                {% endif %}
             </a>
+
         </nav>
 
         <div class="topbar-right">
+
             <div class="live-tag">
-                <div class="live-dot"></div>LIVE
+                <div class="live-dot"></div>
+                LIVE
             </div>
-            <a href="/alerts" class="alert-badge" style="text-decoration:none;">
+
+            <a href="/alerts" class="alert-badge">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path
-                        d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                 </svg>
                 {{ unacked_alerts }} ALERTS
             </a>
+
             <div class="sys-time" id="clock">--:--:--</div>
+
         </div>
     </header>
 
@@ -782,245 +827,410 @@
 
         <!-- STATS ROW -->
         <div class="stats-row">
+
             <div class="stat-card">
                 <div class="stat-icon-wrap ic-blue">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                     </svg>
                 </div>
+
                 <div>
                     <div class="stat-label">Total Readings</div>
-                    <div class="stat-value" style="color:var(--accent)">{{ total_readings }}</div>
+                    <div class="stat-value" style="color:var(--accent)">
+                        {{ total_readings }}
+                    </div>
                     <div class="stat-meta">Stored in SQLite DB</div>
                 </div>
             </div>
+
             <div class="stat-card">
                 <div class="stat-icon-wrap {% if unacked_alerts > 0 %}ic-red{% else %}ic-green{% endif %}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path
-                            d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                        <line x1="12" y1="9" x2="12" y2="13" />
-                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
                     </svg>
                 </div>
+
                 <div>
                     <div class="stat-label">Active Alerts</div>
-                    <div class="stat-value"
-                        style="color:{% if unacked_alerts > 0 %}var(--danger){% else %}var(--success){% endif %}">{{
-                        unacked_alerts }}</div>
-                    <div class="stat-meta">{% if unacked_alerts == 0 %}All clear{% else %}Needs attention{% endif %}
+                    <div class="stat-value" style="color:{% if unacked_alerts > 0 %}var(--danger){% else %}var(--success){% endif %}">
+                        {{ unacked_alerts }}
+                    </div>
+                    <div class="stat-meta">
+                        {% if unacked_alerts == 0 %}
+                            All clear
+                        {% else %}
+                            Needs attention
+                        {% endif %}
                     </div>
                 </div>
             </div>
+
             <div class="stat-card">
                 <div class="stat-icon-wrap ic-green">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2v20M2 12h20" />
+                        <path d="M12 2v20M2 12h20"/>
                     </svg>
                 </div>
+
                 <div>
                     <div class="stat-label">Sensors Online</div>
                     <div class="stat-value" style="color:var(--success)">
-                        {{ live_sensors | length if live_sensors else 0 }}/{{ sensor_config | length }}
+                        {% set online_count = namespace(value=0) %}
+                        {% for key in sensor_config %}
+                            {% if live_sensors and live_sensors.get(key) is not none %}
+                                {% set online_count.value = online_count.value + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ online_count.value }}/{{ sensor_config | length }}
                     </div>
                     <div class="stat-meta">Monitored nodes</div>
                 </div>
             </div>
+
             <div class="stat-card">
                 <div class="stat-icon-wrap ic-purple">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m15 10 4.553-2.07A1 1 0 0 1 21 8.87v6.26a1 1 0 0 1-1.447.93L15 14" />
-                        <rect x="1" y="6" width="15" height="12" rx="2" />
+                        <path d="m15 10 4.553-2.07A1 1 0 0 1 21 8.87v6.26a1 1 0 0 1-1.447.93L15 14"/>
+                        <rect x="1" y="6" width="15" height="12" rx="2"/>
                     </svg>
                 </div>
+
                 <div>
                     <div class="stat-label">CCTV Last Event</div>
+
                     <div class="stat-value" style="color:var(--purple);font-size:1rem;padding-top:4px;">
-                        {% if last_detection %}{{ last_detection['person_count'] }} person(s){% else %}No events{% endif
-                        %}
+                        {% if last_detection %}
+                            {{ last_detection['person_count'] }} person(s)
+                        {% else %}
+                            No events
+                        {% endif %}
                     </div>
-                    <div class="stat-meta">{% if last_detection %}{{ last_detection['timestamp'][:16] }}{% else %}Camera
-                        standby{% endif %}</div>
+
+                    <div class="stat-meta">
+                        {% if last_detection %}
+                            {{ last_detection['timestamp'][:16] }}
+                        {% else %}
+                            Camera standby
+                        {% endif %}
+                    </div>
                 </div>
             </div>
+
         </div>
 
         <!-- SENSOR GRID -->
         <div class="section-header">
             <span class="section-title">Live Sensor Readings</span>
-            <button class="btn-accent" onclick="refreshSensors()">Sync Now</button>
+            <button class="btn-accent" id="syncButton" onclick="refreshSensors()">Sync Now</button>
         </div>
 
         <div class="sensor-grid" id="sensorGrid">
+
             {% set sensor_icons = {
-            'temp': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
-            </svg>',
-            'hum': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path
-                    d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
-            </svg>',
-            'motion': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="4" />
-                <path d="M1.05 12H7" />
-                <path d="M17.01 12h5.95" />
-                <path d="M12 6.06V1.1" />
-                <path d="M12 22.96V18" />
-            </svg>',
-            'air_real': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2" />
-                <path d="M9.6 4.6A2 2 0 1 1 11 8H2" />
-                <path d="M12.6 19.4A2 2 0 1 0 14 16H2" />
-            </svg>',
-            'gas_fake': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path
-                    d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-            </svg>'
+                'temp': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>',
+                'hum': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>',
+                'motion': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M1.05 12H7"/><path d="M17.01 12h5.95"/><path d="M12 6.06V1.1"/><path d="M12 22.96V18"/></svg>',
+                'air_real': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>',
+                'gas_fake': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>'
             } %}
-            {% set icon_colors =
-            {'temp':'ic-amber','hum':'ic-blue','motion':'ic-purple','air_real':'ic-blue','gas_fake':'ic-red'} %}
-            {% set value_colors =
-            {'temp':'var(--warning)','hum':'var(--accent)','motion':'var(--purple)','air_real':'var(--accent)','gas_fake':'var(--danger)'}
-            %}
+
+            {% set icon_colors = {
+                'temp':'ic-amber',
+                'hum':'ic-blue',
+                'motion':'ic-purple',
+                'air_real':'ic-blue',
+                'gas_fake':'ic-red'
+            } %}
+
+            {% set value_colors = {
+                'temp':'var(--warning)',
+                'hum':'var(--accent)',
+                'motion':'var(--purple)',
+                'air_real':'var(--accent)',
+                'gas_fake':'var(--danger)'
+            } %}
 
             {% for key, cfg in sensor_config.items() %}
-            {% set live_val = live_sensors.get(key) if live_sensors else none %}
-            {% set max_t = cfg.max_threshold %}
-            {% set min_t = cfg.min_threshold %}
-            {% set is_alert = (live_val is not none) and ((max_t is not none and live_val|float > max_t) or (min_t is
-            not none and live_val|float < min_t)) %} {% set pct=0 %} {% if live_val is not none and max_t is not none %}
-                {% set pct=[(live_val|float / max_t * 100), 100]|min|int %} {% endif %} <div
-                class="sensor-card {% if is_alert %}alert-state{% endif %}">
-                <div class="sensor-header">
-                    <div class="sensor-icon-box {{ icon_colors.get(key,'ic-blue') }}">
-                        {{ sensor_icons.get(key, '') | safe }}
-                    </div>
-                    <div
-                        class="sensor-status-dot {% if live_val is none %}dot-off{% elif is_alert %}dot-bad{% else %}dot-ok{% endif %}">
-                    </div>
-                </div>
-                <div class="sensor-model">{{ cfg.model }}</div>
-                <div class="sensor-name">{{ cfg.display_name }}</div>
-                <div class="sensor-cat">{{ cfg.category }}</div>
-                <div class="sensor-value-row">
-                    <span class="sensor-value" style="color:{{ value_colors.get(key,'var(--accent)') }}">
-                        {% if live_val is not none %}
-                        {% if cfg.unit == '' %}
-                        {% if live_val == 1 %}DETECTED{% else %}CLEAR{% endif %}
-                        {% else %}
-                        {{ live_val }}
-                        {% endif %}
-                        {% else %}N/A{% endif %}
-                    </span>
-                    {% if cfg.unit and cfg.unit != '' %}<span class="sensor-unit">{{ cfg.unit }}</span>{% endif %}
-                </div>
-                {% if max_t is not none and live_val is not none %}
-                <div class="sensor-bar-wrap">
-                    <div class="sensor-bar"
-                        style="width:{{ pct }}%;background:{% if pct > 85 %}var(--danger){% elif pct > 60 %}var(--warning){% else %}var(--success){% endif %}">
-                    </div>
-                </div>
-                <div class="sensor-threshold">
-                    <span>0{{ cfg.unit }}</span>
-                    <span>Limit: {{ max_t }}{{ cfg.unit }}</span>
-                </div>
+
+                {% set live_val = live_sensors.get(key) if live_sensors else none %}
+                {% set numeric_val = live_val | float if live_val is not none else none %}
+                {% set max_t = cfg.max_threshold %}
+                {% set min_t = cfg.min_threshold %}
+
+                {% set is_alert = (
+                    numeric_val is not none and (
+                        (max_t is not none and numeric_val > max_t) or
+                        (min_t is not none and numeric_val < min_t)
+                    )
+                ) %}
+
+                {% set pct = 0 %}
+                {% if numeric_val is not none and max_t is not none and max_t > 0 %}
+                    {% set pct = [[(numeric_val / max_t * 100), 100] | min, 0] | max | int %}
                 {% endif %}
-        </div>
-        {% endfor %}
+
+                <div class="sensor-card {% if is_alert %}alert-state{% endif %}">
+
+                    <div class="sensor-header">
+                        <div class="sensor-icon-box {{ icon_colors.get(key, 'ic-blue') }}">
+                            {{ sensor_icons.get(key, '') | safe }}
+                        </div>
+
+                        <div class="sensor-status-dot {% if live_val is none %}dot-off{% elif is_alert %}dot-bad{% else %}dot-ok{% endif %}"></div>
+                    </div>
+
+                    <div class="sensor-model">{{ cfg.model }}</div>
+                    <div class="sensor-name">{{ cfg.display_name }}</div>
+                    <div class="sensor-cat">{{ cfg.category }}</div>
+
+                    <div class="sensor-value-row">
+
+                        <span class="sensor-value" style="color:{{ value_colors.get(key, 'var(--accent)') }}">
+
+                            {% if live_val is not none %}
+
+                                {% if cfg.unit == '' %}
+                                    {% if numeric_val == 1 %}
+                                        DETECTED
+                                    {% else %}
+                                        CLEAR
+                                    {% endif %}
+                                {% else %}
+                                    {{ live_val }}
+                                {% endif %}
+
+                            {% else %}
+                                N/A
+                            {% endif %}
+
+                        </span>
+
+                        {% if cfg.unit %}
+                            <span class="sensor-unit">{{ cfg.unit }}</span>
+                        {% endif %}
+
+                    </div>
+
+                    {% if max_t is not none and numeric_val is not none %}
+
+                        <div class="sensor-bar-wrap">
+                            <div class="sensor-bar"
+                                 style="width:{{ pct }}%;background:{% if pct > 85 %}var(--danger){% elif pct > 60 %}var(--warning){% else %}var(--success){% endif %}">
+                            </div>
+                        </div>
+
+                        <div class="sensor-threshold">
+                            <span>0{{ cfg.unit }}</span>
+                            <span>Limit: {{ max_t }}{{ cfg.unit }}</span>
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-msg">
+                    No sensor configuration available.
+                </div>
+
+            {% endfor %}
+
         </div>
 
         <!-- BOTTOM PANELS -->
         <div class="bottom-row">
-            <!-- Recent Alerts -->
+
+            <!-- RECENT ALERTS -->
             <div class="panel">
+
                 <div class="panel-head">
                     <span class="panel-title">Recent Alerts</span>
-                    <a href="/alerts" class="btn-sm" style="text-decoration:none">View All</a>
+                    <a href="/alerts" class="btn-sm">View All</a>
                 </div>
+
                 <div class="panel-body">
+
                     {% if recent_alerts %}
-                    <div class="alert-list">
-                        {% for a in recent_alerts %}
-                        <div class="alert-row {{ a['alert_type'] }}">
-                            {% if a['alert_type'] == 'HIGH' %}
-                            <svg class="alert-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                stroke="#ef4444" stroke-width="2.5">
-                                <path
-                                    d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                            </svg>
-                            {% else %}
-                            <svg class="alert-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                stroke="#f59e0b" stroke-width="2.5">
-                                <circle cx="12" cy="12" r="10" />
-                                <line x1="12" y1="8" x2="12" y2="12" />
-                                <line x1="12" y1="16" x2="12.01" y2="16" />
-                            </svg>
-                            {% endif %}
-                            <span
-                                class="alert-type-tag {% if a['alert_type']=='HIGH' %}tag-high{% else %}tag-low{% endif %}">{{
-                                a['alert_type'] }}</span>
-                            <span class="alert-msg">{{ a['message'] }}</span>
-                            <span class="alert-time">{{ a['timestamp'][11:16] }}</span>
+
+                        <div class="alert-list">
+
+                            {% for a in recent_alerts %}
+
+                                <div class="alert-row {{ a['alert_type'] }}">
+
+                                    {% if a['alert_type'] == 'HIGH' %}
+
+                                        <svg class="alert-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5">
+                                            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                        </svg>
+
+                                    {% else %}
+
+                                        <svg class="alert-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <line x1="12" y1="8" x2="12" y2="12"/>
+                                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                        </svg>
+
+                                    {% endif %}
+
+                                    <span class="alert-type-tag {% if a['alert_type'] == 'HIGH' %}tag-high{% else %}tag-low{% endif %}">
+                                        {{ a['alert_type'] }}
+                                    </span>
+
+                                    <span class="alert-msg">{{ a['message'] }}</span>
+
+                                    <span class="alert-time">
+                                        {{ a['timestamp'][11:16] if a['timestamp'] else '' }}
+                                    </span>
+
+                                </div>
+
+                            {% endfor %}
+
                         </div>
-                        {% endfor %}
-                    </div>
+
                     {% else %}
-                    <div class="empty-msg">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        All systems nominal — no alerts
-                    </div>
+
+                        <div class="empty-msg">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            All systems nominal — no alerts
+                        </div>
+
                     {% endif %}
+
                 </div>
             </div>
 
-            <!-- Temperature History Chart -->
+            <!-- TEMPERATURE HISTORY CHART -->
             <div class="panel">
+
                 <div class="panel-head">
                     <span class="panel-title">Temperature History (DHT22)</span>
-                    <span style="font-family:var(--mono);font-size:.65rem;color:var(--muted);">Last 50 readings</span>
+                    <span style="font-family:var(--mono);font-size:.65rem;color:var(--muted);">
+                        Last 50 readings
+                    </span>
                 </div>
+
                 <div class="panel-body">
                     <div class="chart-wrap">
                         <canvas id="tempChart"></canvas>
                     </div>
                 </div>
+
             </div>
+
         </div>
 
     </main>
 
     <script>
-        // ── Clock ──
+        // CLOCK
         function tick() {
-            const now = new Date();
-            document.getElementById('clock').textContent =
-                now.toTimeString().slice(0, 8);
-        }
-        tick(); setInterval(tick, 1000);
+            const clock = document.getElementById('clock');
 
-        // ── Refresh sensor cards via API ──
+            if (clock) {
+                clock.textContent = new Date().toTimeString().slice(0, 8);
+            }
+        }
+
+        tick();
+        setInterval(tick, 1000);
+
+
+        // REFRESH SENSOR DATA
         async function refreshSensors() {
+            const button = document.getElementById('syncButton');
+
+            if (!button) return;
+
             try {
-                await fetch('/api/sync', { method: 'POST' });
+                button.disabled = true;
+                button.textContent = 'Syncing...';
+
+                const response = await fetch('/api/sync', {
+                    method: 'POST'
+                });
+
+                let result;
+
+                try {
+                    result = await response.json();
+                } catch {
+                    throw new Error('Invalid server response.');
+                }
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Unable to sync sensor data.');
+                }
+
                 location.reload();
-            } catch (e) { console.error(e); }
+
+            } catch (error) {
+                console.error('[Sync Error]', error);
+                alert(error.message || 'Unable to connect to the server.');
+
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Sync Now';
+            }
         }
 
-        // ── Temperature Chart ──
+
+        // TEMPERATURE HISTORY CHART
         async function loadTempChart() {
             try {
-                const res = await fetch('/api/history/temp?limit=50');
-                const data = await res.json();
-                if (!data.length) return;
-                const labels = data.map(d => d.timestamp.slice(11, 16));
-                const values = data.map(d => d.value);
-                const ctx = document.getElementById('tempChart').getContext('2d');
+                const response = await fetch('/api/history/temp?limit=50');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    console.log('[Chart] No temperature history available.');
+                    return;
+                }
+
+                const validData = data.filter(item =>
+                    item.timestamp &&
+                    Number.isFinite(Number(item.value))
+                );
+
+                if (validData.length === 0) {
+                    return;
+                }
+
+                const labels = validData.map(item =>
+                    item.timestamp.slice(11, 16)
+                );
+
+                const values = validData.map(item =>
+                    Number(item.value)
+                );
+
+                const canvas = document.getElementById('tempChart');
+
+                if (!canvas || typeof Chart === 'undefined') {
+                    console.error('[Chart] Chart.js or canvas is unavailable.');
+                    return;
+                }
+
+                const ctx = canvas.getContext('2d');
+
                 new Chart(ctx, {
                     type: 'line',
+
                     data: {
-                        labels,
+                        labels: labels,
+
                         datasets: [{
                             label: 'Temperature °C',
                             data: values,
@@ -1030,40 +1240,96 @@
                             pointRadius: 2,
                             pointHoverRadius: 5,
                             tension: 0.4,
-                            fill: true,
+                            fill: true
                         }]
                     },
+
                     options: {
-                        responsive: true, maintainAspectRatio: false,
+                        responsive: true,
+                        maintainAspectRatio: false,
+
                         plugins: {
-                            legend: { display: false },
+                            legend: {
+                                display: false
+                            },
+
                             tooltip: {
                                 backgroundColor: '#0f1e35',
                                 borderColor: '#1a3050',
                                 borderWidth: 1,
                                 titleColor: '#ddeeff',
                                 bodyColor: '#f59e0b',
-                                titleFont: { family: 'JetBrains Mono', size: 11 },
-                                bodyFont: { family: 'JetBrains Mono', size: 13 },
+
+                                titleFont: {
+                                    family: 'JetBrains Mono',
+                                    size: 11
+                                },
+
+                                bodyFont: {
+                                    family: 'JetBrains Mono',
+                                    size: 13
+                                }
                             }
                         },
+
                         scales: {
-                            x: { grid: { color: '#1a3050' }, ticks: { color: '#4d7a9e', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 8 } },
+                            x: {
+                                grid: {
+                                    color: '#1a3050'
+                                },
+
+                                ticks: {
+                                    color: '#4d7a9e',
+
+                                    font: {
+                                        family: 'JetBrains Mono',
+                                        size: 9
+                                    },
+
+                                    maxTicksLimit: 8
+                                }
+                            },
+
                             y: {
-                                grid: { color: '#1a3050' }, ticks: { color: '#4d7a9e', font: { family: 'JetBrains Mono', size: 10 } },
-                                suggestedMin: 15, suggestedMax: 45,
-                                afterDataLimits(scale) { scale.max += 2; scale.min -= 2; }
+                                grid: {
+                                    color: '#1a3050'
+                                },
+
+                                ticks: {
+                                    color: '#4d7a9e',
+
+                                    font: {
+                                        family: 'JetBrains Mono',
+                                        size: 10
+                                    }
+                                },
+
+                                suggestedMin: 15,
+                                suggestedMax: 45,
+
+                                afterDataLimits(scale) {
+                                    scale.max += 2;
+                                    scale.min -= 2;
+                                }
                             }
                         }
                     }
                 });
-            } catch (e) { console.error('[Chart]', e); }
+
+            } catch (error) {
+                console.error('[Chart Error]', error);
+            }
         }
+
         loadTempChart();
 
-        // ── Auto-refresh every 30s ──
-        setTimeout(() => location.reload(), 30000);
-    </script>
-</body>
 
+        // AUTO REFRESH
+        setTimeout(() => {
+            location.reload();
+        }, 30000);
+
+    </script>
+
+</body>
 </html>
