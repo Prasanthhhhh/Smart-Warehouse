@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,9 +6,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Alerts — Warehouse Monitoring System</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-        rel="stylesheet" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
     <style>
         :root {
             --bg: #060d1b;
@@ -45,6 +46,11 @@
             color: inherit;
         }
 
+        button:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
         .topbar {
             position: sticky;
             top: 0;
@@ -52,11 +58,12 @@
             background: rgba(6, 13, 27, .92);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border);
-            height: 58px;
+            min-height: 58px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 1.5rem;
+            gap: 1rem;
         }
 
         .topbar-left {
@@ -79,6 +86,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .logo-text {
@@ -92,16 +100,6 @@
             color: var(--muted);
             font-family: var(--mono);
             letter-spacing: .1em;
-        }
-
-        .facility-badge {
-            font-family: var(--mono);
-            font-size: .72rem;
-            color: var(--accent);
-            background: var(--accent-g);
-            border: 1px solid rgba(14, 165, 233, .25);
-            padding: 3px 10px;
-            border-radius: 4px;
         }
 
         .topbar-nav {
@@ -119,6 +117,7 @@
             font-weight: 500;
             color: var(--muted);
             transition: all .2s;
+            white-space: nowrap;
         }
 
         .nav-item:hover {
@@ -162,9 +161,7 @@
         }
 
         @keyframes pulse {
-
-            0%,
-            100% {
+            0%, 100% {
                 box-shadow: 0 0 0 0 rgba(16, 185, 129, .4);
             }
 
@@ -189,6 +186,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 1rem;
             margin-bottom: 1.5rem;
         }
 
@@ -207,13 +205,15 @@
         .header-actions {
             display: flex;
             gap: .6rem;
+            flex-wrap: wrap;
         }
 
         .btn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 5px;
-            padding: 6px 14px;
+            padding: 7px 14px;
             border-radius: 6px;
             font-size: .76rem;
             font-weight: 500;
@@ -243,7 +243,16 @@
             color: var(--text);
         }
 
-        /* Summary cards */
+        .btn-clear {
+            background: rgba(239, 68, 68, .1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, .3);
+        }
+
+        .btn-clear:hover {
+            background: rgba(239, 68, 68, .2);
+        }
+
         .summary-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -296,7 +305,7 @@
             color: var(--muted);
             text-transform: uppercase;
             letter-spacing: .06em;
-            margin-bottom: 1px;
+            margin-bottom: 3px;
         }
 
         .sum-val {
@@ -306,18 +315,18 @@
             line-height: 1;
         }
 
-        /* Filter bar */
         .filter-bar {
             display: flex;
             gap: .5rem;
             align-items: center;
+            flex-wrap: wrap;
             margin-bottom: 1rem;
         }
 
         .filter-btn {
             font-family: var(--mono);
             font-size: .68rem;
-            padding: 4px 12px;
+            padding: 5px 12px;
             border-radius: 4px;
             border: 1px solid var(--border);
             background: transparent;
@@ -338,7 +347,6 @@
             color: var(--text);
         }
 
-        /* Alert table */
         .alert-table-wrap {
             background: var(--card);
             border: 1px solid var(--border);
@@ -350,6 +358,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 1rem;
             padding: .9rem 1.2rem;
             border-bottom: 1px solid var(--border);
         }
@@ -378,6 +387,7 @@
             color: var(--muted);
             border-bottom: 1px solid var(--border);
             background: rgba(10, 22, 40, .4);
+            white-space: nowrap;
         }
 
         tbody tr {
@@ -446,7 +456,7 @@
         .ack-btn {
             font-family: var(--mono);
             font-size: .6rem;
-            padding: 3px 10px;
+            padding: 4px 10px;
             border-radius: 4px;
             border: 1px solid rgba(16, 185, 129, .25);
             background: rgba(16, 185, 129, .08);
@@ -467,7 +477,7 @@
 
         .empty-state {
             text-align: center;
-            padding: 3rem;
+            padding: 3rem 1rem;
             color: var(--muted);
         }
 
@@ -485,22 +495,17 @@
             pointer-events: none;
             z-index: 0;
             opacity: .02;
-            background-image: linear-gradient(var(--accent) 1px, transparent 1px), linear-gradient(90deg, var(--accent) 1px, transparent 1px);
+            background-image:
+                linear-gradient(var(--accent) 1px, transparent 1px),
+                linear-gradient(90deg, var(--accent) 1px, transparent 1px);
             background-size: 40px 40px;
         }
 
-        /* Clear DB button */
-        .btn-clear {
-            background: rgba(239, 68, 68, .1);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, .3);
+        .page {
+            position: relative;
+            z-index: 1;
         }
 
-        .btn-clear:hover {
-            background: rgba(239, 68, 68, .2);
-        }
-
-        /* Confirmation modal */
         .modal-backdrop {
             display: none;
             position: fixed;
@@ -510,6 +515,7 @@
             backdrop-filter: blur(6px);
             align-items: center;
             justify-content: center;
+            padding: 1rem;
         }
 
         .modal-backdrop.show {
@@ -522,7 +528,7 @@
             border-radius: 14px;
             padding: 2rem;
             max-width: 400px;
-            width: 90%;
+            width: 100%;
             box-shadow: 0 24px 80px rgba(0, 0, 0, .6);
         }
 
@@ -577,56 +583,141 @@
 
         .modal-actions .btn {
             flex: 1;
-            justify-content: center;
+        }
+
+        @media (max-width: 900px) {
+            .topbar {
+                flex-wrap: wrap;
+                padding: .75rem 1rem;
+            }
+
+            .topbar-nav {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+                overflow-x: auto;
+            }
+
+            .page-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .page {
+                padding: 1rem;
+            }
+
+            .summary-row {
+                grid-template-columns: 1fr;
+                gap: .7rem;
+            }
+
+            .sum-card {
+                padding: .85rem 1rem;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                flex: 1;
+            }
+
+            .topbar-nav {
+                justify-content: flex-start;
+            }
+
+            .nav-item {
+                padding: 6px 10px;
+                font-size: .75rem;
+            }
+
+            .topbar-right {
+                gap: .6rem;
+            }
+
+            .logo-text {
+                font-size: .8rem;
+            }
+
+            .logo-sub {
+                font-size: .6rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.15rem;
+            }
+
+            .modal {
+                padding: 1.5rem;
+            }
         }
     </style>
 </head>
 
 <body>
     <div class="gd"></div>
+
     <header class="topbar">
         <div class="topbar-left">
             <div class="logo">
-                <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18"
-                        height="18">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18">
                         <rect x="1" y="3" width="15" height="13" rx="1" />
                         <path d="m16 8 2 2 4-4" />
-                    </svg></div>
+                    </svg>
+                </div>
                 <div>
                     <div class="logo-text">WAREHOUSE MONITORING</div>
                     <div class="logo-sub">INDUSTRIAL IOT PLATFORM</div>
                 </div>
             </div>
-
         </div>
+
         <nav class="topbar-nav">
-            <a href="/" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <a href="/" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect width="7" height="9" x="3" y="3" rx="1" />
                     <rect width="7" height="5" x="14" y="3" rx="1" />
                     <rect width="7" height="9" x="14" y="12" rx="1" />
                     <rect width="7" height="5" x="3" y="16" rx="1" />
-                </svg>Dashboard</a>
-            <a href="/sensors" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2">
+                </svg>
+                Dashboard
+            </a>
+
+            <a href="/sensors" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                </svg>Sensors</a>
-            <a href="/cctv" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2">
+                </svg>
+                Sensors
+            </a>
+
+            <a href="/cctv" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="m15 10 4.553-2.07A1 1 0 0 1 21 8.87v6.26a1 1 0 0 1-1.447.93L15 14" />
                     <rect x="1" y="6" width="15" height="12" rx="2" />
                     <circle cx="5.5" cy="12" r="1.5" />
-                </svg>CCTV</a>
-            <a href="/alerts" class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2">
-                    <path
-                        d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                </svg>
+                CCTV
+            </a>
+
+            <a href="/alerts" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
                     <line x1="12" y1="9" x2="12" y2="13" />
                     <line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>Alerts</a>
+                </svg>
+                Alerts
+            </a>
         </nav>
+
         <div class="topbar-right">
             <div class="live-dot-wrap">
-                <div class="live-dot"></div>LIVE
+                <div class="live-dot"></div>
+                LIVE
             </div>
             <div class="sys-time" id="clock">--:--:--</div>
         </div>
@@ -638,9 +729,11 @@
                 <h1>Alert Center</h1>
                 <p>THRESHOLD BREACH LOG · {{ alerts | length }} TOTAL RECORDS · SQLITE DB</p>
             </div>
+
             <div class="header-actions">
                 <button class="btn btn-ghost" onclick="location.reload()">Refresh</button>
-                <button class="btn btn-primary" onclick="ackAll()">Acknowledge All</button>
+                <button class="btn btn-primary" id="ackAllBtn" onclick="ackAll()">Acknowledge All</button>
+
                 <button class="btn btn-clear" onclick="showClearModal()">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6" />
@@ -654,63 +747,72 @@
             </div>
         </div>
 
-        {% set high_count = alerts | selectattr('alert_type','equalto','HIGH') | list | length %}
-        {% set low_count = alerts | selectattr('alert_type','equalto','LOW') | list | length %}
-        {% set acked = alerts | selectattr('acknowledged','equalto',1) | list | length %}
+        {% set high_count = alerts | selectattr('alert_type', 'equalto', 'HIGH') | list | length %}
+        {% set low_count = alerts | selectattr('alert_type', 'equalto', 'LOW') | list | length %}
+        {% set acked = alerts | selectattr('acknowledged', 'equalto', 1) | list | length %}
 
         <div class="summary-row">
             <div class="sum-card">
-                <div class="sum-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <path
-                            d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <div class="sum-icon ic-red">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
                         <line x1="12" y1="9" x2="12" y2="13" />
                         <line x1="12" y1="17" x2="12.01" y2="17" />
-                    </svg></div>
+                    </svg>
+                </div>
                 <div>
                     <div class="sum-label">High Alerts</div>
-                    <div class="sum-val" style="color:var(--danger)">{{ high_count }}</div>
+                    <div class="sum-val" id="highCount" style="color:var(--danger)">{{ high_count }}</div>
                 </div>
             </div>
+
             <div class="sum-card">
-                <div class="sum-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
+                <div class="sum-icon ic-amber">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10" />
                         <line x1="12" y1="8" x2="12" y2="12" />
                         <line x1="12" y1="16" x2="12.01" y2="16" />
-                    </svg></div>
+                    </svg>
+                </div>
                 <div>
                     <div class="sum-label">Low Alerts</div>
-                    <div class="sum-val" style="color:var(--warning)">{{ low_count }}</div>
+                    <div class="sum-val" id="lowCount" style="color:var(--warning)">{{ low_count }}</div>
                 </div>
             </div>
+
             <div class="sum-card">
-                <div class="sum-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
+                <div class="sum-icon ic-green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 12l2 2 4-4" />
                         <circle cx="12" cy="12" r="10" />
-                    </svg></div>
+                    </svg>
+                </div>
                 <div>
                     <div class="sum-label">Acknowledged</div>
-                    <div class="sum-val" style="color:var(--success)">{{ acked }}</div>
+                    <div class="sum-val" id="ackedCount" style="color:var(--success)">{{ acked }}</div>
                 </div>
             </div>
         </div>
 
         <div class="filter-bar">
-            <span style="font-size:.7rem;color:var(--muted);margin-right:.25rem;font-family:var(--mono);">FILTER:</span>
-            <button class="filter-btn active" onclick="filterAlerts('all',this)">ALL</button>
-            <button class="filter-btn" onclick="filterAlerts('HIGH',this)">HIGH</button>
-            <button class="filter-btn" onclick="filterAlerts('LOW',this)">LOW</button>
-            <button class="filter-btn" onclick="filterAlerts('unacked',this)">UNACKNOWLEDGED</button>
+            <span style="font-size:.7rem;color:var(--muted);margin-right:.25rem;font-family:var(--mono);">
+                FILTER:
+            </span>
+
+            <button class="filter-btn active" onclick="filterAlerts('all', this)">ALL</button>
+            <button class="filter-btn" onclick="filterAlerts('HIGH', this)">HIGH</button>
+            <button class="filter-btn" onclick="filterAlerts('LOW', this)">LOW</button>
+            <button class="filter-btn" onclick="filterAlerts('unacked', this)">UNACKNOWLEDGED</button>
         </div>
 
         <div class="alert-table-wrap">
             <div class="table-header">
                 <span class="table-title">Alert History</span>
-                <span style="font-family:var(--mono);font-size:.65rem;color:var(--muted);">{{ unacked }}
-                    unacknowledged</span>
+                <span id="unackedLabel" style="font-family:var(--mono);font-size:.65rem;color:var(--muted);">
+                    {{ unacked }} unacknowledged
+                </span>
             </div>
+
             {% if alerts %}
             <div style="overflow-x:auto;">
                 <table id="alertTable">
@@ -725,26 +827,47 @@
                             <th>Status</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {% for a in alerts %}
-                        <tr data-type="{{ a['alert_type'] }}" data-acked="{{ a['acknowledged'] }}"
-                            id="row{{ a['id'] }}">
-                            <td><span
-                                    class="at-tag {% if a['alert_type']=='HIGH' %}at-high{% else %}at-low{% endif %}">{{
-                                    a['alert_type'] }}</span></td>
-                            <td><span class="at-sensor">{{ a['sensor_name'] }}</span></td>
-                            <td class="at-msg" style="font-size:.75rem;">{{ a['message'] }}</td>
-                            <td class="at-val"
-                                style="color:{% if a['alert_type']=='HIGH' %}var(--danger){% else %}var(--warning){% endif %}">
-                                {{ a['value'] }}</td>
-                            <td style="font-family:var(--mono);font-size:.72rem;color:var(--muted);">{{ a['threshold']
-                                }}</td>
-                            <td class="at-time">{{ a['timestamp'][0:16] }}</td>
+                        <tr
+                            data-type="{{ a['alert_type'] }}"
+                            data-acked="{{ a['acknowledged'] }}"
+                            id="row{{ a['id'] }}"
+                        >
+                            <td>
+                                <span class="at-tag {% if a['alert_type'] == 'HIGH' %}at-high{% else %}at-low{% endif %}">
+                                    {{ a['alert_type'] }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="at-sensor">{{ a['sensor_name'] }}</span>
+                            </td>
+
+                            <td class="at-msg" style="font-size:.75rem;">
+                                {{ a['message'] }}
+                            </td>
+
+                            <td class="at-val" style="color:{% if a['alert_type'] == 'HIGH' %}var(--danger){% else %}var(--warning){% endif %};">
+                                {{ a['value'] }}
+                            </td>
+
+                            <td style="font-family:var(--mono);font-size:.72rem;color:var(--muted);">
+                                {{ a['threshold'] }}
+                            </td>
+
+                            <td class="at-time">
+                                {{ a['timestamp'][0:16] }}
+                            </td>
+
                             <td>
                                 {% if a['acknowledged'] %}
                                 <span class="acked">Acknowledged</span>
                                 {% else %}
-                                <button class="ack-btn" onclick="acknowledge({{ a['id'] }})">ACK</button>
+                                <button class="ack-btn" onclick="acknowledge({{ a['id'] }}, this)">
+                                    ACK
+                                </button>
                                 {% endif %}
                             </td>
                         </tr>
@@ -763,7 +886,6 @@
         </div>
     </main>
 
-    <!-- Confirmation Modal -->
     <div class="modal-backdrop" id="clearModal">
         <div class="modal">
             <div class="modal-icon">
@@ -773,12 +895,19 @@
                     <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
                 </svg>
             </div>
+
             <h2>Clear All Database Records?</h2>
-            <p>This will permanently delete all sensor readings, alerts, and CCTV detection events from the local SQLite
-                database. Live Firebase data is not affected.</p>
+
+            <p>
+                This will permanently delete all sensor readings, alerts, and CCTV detection events
+                from the local SQLite database. Live Firebase data is not affected.
+            </p>
+
             <div class="modal-warn">THIS ACTION CANNOT BE UNDONE</div>
+
             <div class="modal-actions">
                 <button class="btn btn-ghost" onclick="hideClearModal()">Cancel</button>
+
                 <button class="btn btn-clear" id="confirmClearBtn" onclick="clearDatabase()">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6" />
@@ -791,64 +920,216 @@
     </div>
 
     <script>
-        function tick() { document.getElementById('clock').textContent = new Date().toTimeString().slice(0, 8); }
-        tick(); setInterval(tick, 1000);
+        // Clock
+        function tick() {
+            const clock = document.getElementById('clock');
 
-        async function acknowledge(id) {
-            try {
-                await fetch(`/api/alerts/${id}/acknowledge`, { method: 'POST' });
-                const row = document.getElementById('row' + id);
-                const btn = row.querySelector('.ack-btn');
-                btn.outerHTML = '<span class="acked">Acknowledged</span>';
-                row.setAttribute('data-acked', '1');
-            } catch (e) { console.error(e); }
-        }
-
-        async function ackAll() {
-            await fetch('/api/alerts/acknowledge-all', { method: 'POST' });
-            location.reload();
-        }
-
-        function showClearModal() {
-            document.getElementById('clearModal').classList.add('show');
-        }
-        function hideClearModal() {
-            document.getElementById('clearModal').classList.remove('show');
-        }
-        // Close on backdrop click
-        document.getElementById('clearModal').addEventListener('click', function (e) {
-            if (e.target === this) hideClearModal();
-        });
-
-        async function clearDatabase() {
-            const btn = document.getElementById('confirmClearBtn');
-            btn.textContent = 'Clearing...';
-            btn.disabled = true;
-            try {
-                const res = await fetch('/api/clear-db', { method: 'POST' });
-                const data = await res.json();
-                if (data.success) {
-                    hideClearModal();
-                    location.reload();
-                } else {
-                    alert('Clear failed: ' + (data.error || 'Unknown error'));
-                    btn.textContent = 'Confirm Clear';
-                    btn.disabled = false;
-                }
-            } catch (e) {
-                alert('Network error: ' + e.message);
-                btn.textContent = 'Confirm Clear';
-                btn.disabled = false;
+            if (clock) {
+                clock.textContent = new Date().toTimeString().slice(0, 8);
             }
         }
 
-        function filterAlerts(type, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('#alertTable tbody tr').forEach(row => {
-                if (type === 'all') row.style.display = '';
-                else if (type === 'unacked') row.style.display = row.dataset.acked === '0' ? '' : 'none';
-                else row.style.display = row.dataset.type === type ? '' : 'none';
+        tick();
+        setInterval(tick, 1000);
+
+
+        // Update summary counts
+        function updateSummary() {
+            const rows = document.querySelectorAll('#alertTable tbody tr');
+
+            let high = 0;
+            let low = 0;
+            let acknowledged = 0;
+            let unacknowledged = 0;
+
+            rows.forEach(row => {
+                if (row.dataset.type === 'HIGH') high++;
+                if (row.dataset.type === 'LOW') low++;
+
+                if (row.dataset.acked === '1') {
+                    acknowledged++;
+                } else {
+                    unacknowledged++;
+                }
+            });
+
+            const highElement = document.getElementById('highCount');
+            const lowElement = document.getElementById('lowCount');
+            const ackedElement = document.getElementById('ackedCount');
+            const unackedElement = document.getElementById('unackedLabel');
+
+            if (highElement) highElement.textContent = high;
+            if (lowElement) lowElement.textContent = low;
+            if (ackedElement) ackedElement.textContent = acknowledged;
+
+            if (unackedElement) {
+                unackedElement.textContent = `${unacknowledged} unacknowledged`;
+            }
+        }
+
+
+        // Read API response safely
+        async function readResponse(response) {
+            const contentType = response.headers.get('content-type') || '';
+
+            if (contentType.includes('application/json')) {
+                return await response.json();
+            }
+
+            const text = await response.text();
+            return { message: text };
+        }
+
+
+        // Acknowledge one alert
+        async function acknowledge(id, button) {
+            if (!id || !button || button.disabled) return;
+
+            button.disabled = true;
+            button.textContent = 'WAIT...';
+
+            try {
+                const response = await fetch(`/api/alerts/${encodeURIComponent(id)}/acknowledge`, {
+                    method: 'POST'
+                });
+
+                const data = await readResponse(response);
+
+                if (!response.ok || data.success === false) {
+                    throw new Error(data.error || data.message || `Request failed (${response.status})`);
+                }
+
+                const row = document.getElementById('row' + id);
+
+                if (!row) return;
+
+                const statusCell = button.closest('td');
+
+                if (statusCell) {
+                    statusCell.innerHTML = '<span class="acked">Acknowledged</span>';
+                }
+
+                row.dataset.acked = '1';
+
+                updateSummary();
+
+            } catch (error) {
+                console.error('Acknowledge error:', error);
+                alert('Unable to acknowledge alert: ' + error.message);
+
+                button.disabled = false;
+                button.textContent = 'ACK';
+            }
+        }
+
+
+        // Acknowledge all alerts
+        async function ackAll() {
+            const button = document.getElementById('ackAllBtn');
+
+            if (!button || button.disabled) return;
+
+            button.disabled = true;
+            button.textContent = 'Processing...';
+
+            try {
+                const response = await fetch('/api/alerts/acknowledge-all', {
+                    method: 'POST'
+                });
+
+                const data = await readResponse(response);
+
+                if (!response.ok || data.success === false) {
+                    throw new Error(data.error || data.message || `Request failed (${response.status})`);
+                }
+
+                location.reload();
+
+            } catch (error) {
+                console.error('Acknowledge all error:', error);
+                alert('Unable to acknowledge alerts: ' + error.message);
+
+                button.disabled = false;
+                button.textContent = 'Acknowledge All';
+            }
+        }
+
+
+        // Clear database modal
+        function showClearModal() {
+            document.getElementById('clearModal').classList.add('show');
+        }
+
+        function hideClearModal() {
+            document.getElementById('clearModal').classList.remove('show');
+        }
+
+
+        // Close modal when clicking outside
+        const clearModal = document.getElementById('clearModal');
+
+        if (clearModal) {
+            clearModal.addEventListener('click', function (event) {
+                if (event.target === this) {
+                    hideClearModal();
+                }
+            });
+        }
+
+
+        // Clear database
+        async function clearDatabase() {
+            const button = document.getElementById('confirmClearBtn');
+
+            if (!button || button.disabled) return;
+
+            const originalContent = button.innerHTML;
+
+            button.disabled = true;
+            button.textContent = 'Clearing...';
+
+            try {
+                const response = await fetch('/api/clear-db', {
+                    method: 'POST'
+                });
+
+                const data = await readResponse(response);
+
+                if (!response.ok || data.success !== true) {
+                    throw new Error(data.error || data.message || `Clear failed (${response.status})`);
+                }
+
+                hideClearModal();
+                location.reload();
+
+            } catch (error) {
+                console.error('Clear database error:', error);
+                alert('Clear failed: ' + error.message);
+
+                button.disabled = false;
+                button.innerHTML = originalContent;
+            }
+        }
+
+
+        // Alert filters
+        function filterAlerts(type, button) {
+            document.querySelectorAll('.filter-btn').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            button.classList.add('active');
+
+            const rows = document.querySelectorAll('#alertTable tbody tr');
+
+            rows.forEach(row => {
+                if (type === 'all') {
+                    row.style.display = '';
+                } else if (type === 'unacked') {
+                    row.style.display = row.dataset.acked === '0' ? '' : 'none';
+                } else {
+                    row.style.display = row.dataset.type === type ? '' : 'none';
+                }
             });
         }
     </script>
